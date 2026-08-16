@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #F8FAFC;
+    --card: #FFFFFF;
+    --border: #E2E8F0;
+    --muted: #64748B;
+    --ink: #0F172A;
+    --input: #FFFFFF;
+    --subtle: #F1F5F9;
+  }
+
+  .dark {
+    --background: #0B0F19;
+    --card: #151C2C;
+    --border: #243049;
+    --muted: #94A3B8;
+    --ink: #F8FAFC;
+    --input: #1E293B;
+    --subtle: #1E293B;
+  }
+
+  * {
+    @apply border-border;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-ink font-sans antialiased transition-colors duration-200;
+  }
+  ::selection {
+    @apply bg-primary/20;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #CBD2E1;
+    border-radius: 999px;
+    border: 2px solid #F8FAFC;
+  }
+  .dark ::-webkit-scrollbar-thumb {
+    background: #334155;
+    border: 2px solid #0B0F19;
+  }
+  :focus-visible {
+    outline: 2px solid #5B5FEF;
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+  }
+  .dark .glass {
+    background: rgba(21, 28, 44, 0.75);
+  }
+  .glass-dark {
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+  }
+  .text-gradient {
+    background: linear-gradient(135deg, #5B5FEF 0%, #7C3AED 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .shimmer-bg {
+    background: linear-gradient(90deg, #F1F5F9 25%, #E7E9FB 37%, #F1F5F9 63%);
+    background-size: 400% 100%;
+    animation: shimmer 2.5s linear infinite;
+  }
+  .dark .shimmer-bg {
+    background: linear-gradient(90deg, #1E293B 25%, #2D3748 37%, #1E293B 63%);
+  }
+  .card-hover {
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 48px -16px rgba(91, 95, 239, 0.22);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
