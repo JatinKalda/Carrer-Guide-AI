@@ -6,9 +6,15 @@ import { user } from "@/lib/data";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useTheme } from "@/components/layout/theme-provider";
 
+import { useProfile } from "@/lib/profile-context";
+
 export function Navbar({ title, subtitle }: { title: string; subtitle?: string }) {
   const { resolvedTheme, toggleTheme } = useTheme();
+  const { profile } = useProfile();
   const isDark = resolvedTheme === "dark";
+
+  const firstName = profile.name.split(" ")[0] || "User";
+  const avatarInitials = (profile.name.match(/\b\w/g) || ["U"]).join("").slice(0, 2).toUpperCase();
 
   return (
     <header className="sticky top-0 z-30 flex h-20 items-center gap-4 border-b border-border/70 bg-background/80 px-6 backdrop-blur-xl lg:px-10">
@@ -43,8 +49,8 @@ export function Navbar({ title, subtitle }: { title: string; subtitle?: string }
       </Tooltip>
 
       <button className="flex items-center gap-2 rounded-2xl border border-border bg-card py-1.5 pl-1.5 pr-3 transition-colors hover:border-primary-200">
-        <Avatar initials={user.avatar} size="sm" />
-        <span className="hidden text-sm font-medium text-ink sm:block">{user.firstName}</span>
+        <Avatar initials={avatarInitials} size="sm" />
+        <span className="hidden text-sm font-medium text-ink sm:block">{firstName}</span>
       </button>
     </header>
   );
