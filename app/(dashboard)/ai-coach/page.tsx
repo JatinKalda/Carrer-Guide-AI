@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Navbar } from "@/components/layout/navbar";
 import { Card } from "@/components/ui/card";
 import { chatSuggestions } from "@/lib/data";
-import { Bot, Mic, Paperclip, Send, Sparkles, Plus, MessageSquare } from "lucide-react";
+import { Bot, Mic, Paperclip, Send, Sparkles, Plus, MessageSquare, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Msg = { role: "user" | "ai"; text: string };
@@ -16,41 +16,76 @@ const history = [
   "Salary negotiation tips",
 ];
 
-const fullReply =
-  "Great question! Here's a personalized plan for you:\n\n- Strengthen your DSA and problem-solving fundamentals\n- Master backend technologies (Node.js, Python, Java)\n- Build 2-3 real-world projects\n- Learn cloud basics (AWS/GCP) and DevOps\n- Contribute to open source\n- Prepare for behavioral and technical interviews\n\nWould you like to create a detailed roadmap?";
-
 export default function AiCoachPage() {
   const [messages, setMessages] = useState<Msg[]>([
-    { role: "ai", text: "Hello John! How can I help with your career today?" },
+    { role: "ai", text: "Hello! I'm your CareerOS AI Coach. How can I help with your career today?" },
   ]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, streaming]);
 
-  function ask(text: string) {
+  async function ask(text: string) {
     if (!text.trim() || streaming) return;
+    setError(null);
+
+    // Snapshot history BEFORE appending new user message (exclude greeting for context)
+    const historySnapshot = messages.slice(1); // skip initial greeting
+
     setMessages((m) => [...m, { role: "user", text }]);
     setInput("");
     setStreaming(true);
+
+    // Add empty AI placeholder
     setMessages((m) => [...m, { role: "ai", text: "" }]);
 
-    let i = 0;
-    const interval = setInterval(() => {
-      i += 3;
-      setMessages((m) => {
-        const copy = [...m];
-        copy[copy.length - 1] = { role: "ai", text: fullReply.slice(0, i) };
-        return copy;
+    abortRef.current = new AbortController();
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, history: historySnapshot }),
+        signal: abortRef.current.signal,
       });
-      if (i >= fullReply.length) {
-        clearInterval(interval);
-        setStreaming(false);
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({ error: "Unknown error" }));
+        throw new Error(errData.error || `HTTP ${res.status}`);
       }
-    }, 15);
+
+      if (!res.body) throw new Error("No response body");
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulated = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        accumulated += decoder.decode(value, { stream: true });
+        const captured = accumulated;
+        setMessages((m) => {
+          const copy = [...m];
+          copy[copy.length - 1] = { role: "ai", text: captured };
+          return copy;
+        });
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === "AbortError") return;
+      const msg = err instanceof Error ? err.message : "Failed to get a response. Please try again.";
+      setError(msg);
+      // Remove the empty AI placeholder on error
+      setMessages((m) => m.slice(0, -1));
+    } finally {
+      setStreaming(false);
+      abortRef.current = null;
+    }
   }
 
   return (
@@ -60,7 +95,14 @@ export default function AiCoachPage() {
         {/* History sidebar */}
         <Card className="hidden w-64 shrink-0 md:flex md:flex-col">
           <div className="p-4">
-            <button className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-gradient py-2.5 text-sm font-medium text-white shadow-soft">
+            <button
+              onClick={() => {
+                abortRef.current?.abort();
+                setMessages([{ role: "ai", text: "Hello! I'm your CareerOS AI Coach. How can I help with your career today?" }]);
+                setError(null);
+              }}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-gradient py-2.5 text-sm font-medium text-white shadow-soft"
+            >
               <Plus className="h-4 w-4" /> New Chat
             </button>
           </div>
@@ -71,6 +113,7 @@ export default function AiCoachPage() {
             {history.map((h) => (
               <button
                 key={h}
+                onClick={() => ask(h)}
                 className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm text-muted transition-colors hover:bg-slate-50 hover:text-ink"
               >
                 <MessageSquare className="h-3.5 w-3.5 shrink-0" />
@@ -101,13 +144,21 @@ export default function AiCoachPage() {
                       : "bg-primary text-white rounded-tr-md"
                   )}
                 >
-                  {m.text}
+                  {m.text || (streaming && i === messages.length - 1 ? "" : "…")}
                   {m.role === "ai" && streaming && i === messages.length - 1 && (
                     <span className="ml-0.5 inline-block h-4 w-0.5 animate-pulse bg-ink/60 align-middle" />
                   )}
                 </div>
               </div>
             ))}
+
+            {/* Error banner */}
+            {error && (
+              <div className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
 
             {messages.length === 1 && (
               <div className="grid gap-2 sm:grid-cols-2">
@@ -138,14 +189,16 @@ export default function AiCoachPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask me anything about your career..."
-              className="h-11 flex-1 rounded-2xl border border-border bg-slate-50 px-4 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+              disabled={streaming}
+              className="h-11 flex-1 rounded-2xl border border-border bg-slate-50 px-4 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:opacity-60"
             />
             <button type="button" className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border text-muted hover:text-ink">
               <Mic className="h-4 w-4" />
             </button>
             <button
               type="submit"
-              className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-gradient text-white shadow-soft"
+              disabled={streaming || !input.trim()}
+              className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-gradient text-white shadow-soft disabled:opacity-50"
             >
               <Send className="h-4 w-4" />
             </button>
