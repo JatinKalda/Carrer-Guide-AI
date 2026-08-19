@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useProfile } from "@/lib/profile-context";
 import { motion, AnimatePresence } from "framer-motion";
 import { Navbar } from "@/components/layout/navbar";
@@ -30,6 +30,12 @@ export default function LinkedinAnalysisPage() {
   const [step, setStep] = useState(0);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    setUrl(profile.linkedinUrl || "");
+    setResumeName(profile.resumeName || "");
+    setStage(profile.hasAnalyzed ? "done" : "idle");
+  }, [profile.linkedinUrl, profile.resumeName, profile.hasAnalyzed]);
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setResumeName(e.target.files[0].name);
@@ -38,8 +44,8 @@ export default function LinkedinAnalysisPage() {
   };
 
   function analyze() {
-    if (!url.trim() && !resumeName.trim()) {
-      setError("Please enter your LinkedIn profile link or attach your resume.");
+    if (!url.trim() || !resumeName.trim()) {
+      setError("Please add both your LinkedIn profile URL and resume before continuing.");
       return;
     }
 
@@ -124,7 +130,7 @@ export default function LinkedinAnalysisPage() {
               <Card className="border-dashed border-border/80 bg-slate-50/50">
                 <CardContent className="p-10 text-center">
                   <p className="text-sm text-muted">
-                    No data is shown yet. Enter your LinkedIn profile link or attach your resume above and click <strong>Analyze Profile</strong> to generate your score.
+                    No data is shown yet. Enter your LinkedIn profile link and attach your resume above, then click <strong>Analyze Profile</strong> to generate your score.
                   </p>
                 </CardContent>
               </Card>
@@ -244,3 +250,4 @@ export default function LinkedinAnalysisPage() {
     </>
   );
 }
+

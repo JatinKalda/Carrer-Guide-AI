@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useProfile } from "@/lib/profile-context";
 import { Navbar } from "@/components/layout/navbar";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { recentActivity } from "@/lib/data";
 import { Github, Linkedin, Globe, UploadCloud, Award, Crown, CheckCircle2, RotateCcw } from "lucide-react";
 
 const badges = [
@@ -24,20 +23,35 @@ export default function ProfilePage() {
   const [name, setName] = useState(profile.name || "");
   const [role, setRole] = useState(profile.role || "");
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    setLinkedin(profile.linkedinUrl || "");
+    setResumeName(profile.resumeName || "");
+    setName(profile.name || "");
+    setRole(profile.role || "");
+  }, [profile]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setResumeName(e.target.files[0].name);
+      setError("");
     }
   };
 
   const handleSave = () => {
+    if (!linkedin.trim() || !resumeName.trim()) {
+      setError("Please add both your LinkedIn profile URL and resume before saving.");
+      return;
+    }
+
     analyzeProfile({
       linkedinUrl: linkedin,
       resumeName,
       name,
       role,
     });
+    setError("");
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
   };
@@ -105,7 +119,10 @@ export default function ProfilePage() {
                   <Input
                     icon={<Linkedin className="h-4 w-4 text-primary" />}
                     value={linkedin}
-                    onChange={(e) => setLinkedin(e.target.value)}
+                    onChange={(e) => {
+                      setLinkedin(e.target.value);
+                      setError("");
+                    }}
                     placeholder="https://linkedin.com/in/your-profile"
                   />
                 </div>
@@ -135,9 +152,13 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
 
+          {error && (
+            <div className="rounded-xl bg-danger-50 p-3 text-center text-xs font-medium text-danger">{error}</div>
+          )}
+
           {savedSuccess && (
             <div className="rounded-xl bg-success-50 p-3 text-center text-xs font-medium text-success">
-              Profile updated and analyzed successfully!
+              Profile updated and shared across all sections.
             </div>
           )}
 
@@ -149,3 +170,4 @@ export default function ProfilePage() {
     </>
   );
 }
+

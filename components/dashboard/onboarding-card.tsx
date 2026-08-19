@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useProfile } from "@/lib/profile-context";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,11 @@ export function OnboardingSetupCard() {
   const [stepIndex, setStepIndex] = useState(0);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    setLinkedinUrl(profile.linkedinUrl || "");
+    setResumeName(profile.resumeName || "");
+  }, [profile.linkedinUrl, profile.resumeName]);
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setResumeName(e.target.files[0].name);
@@ -32,8 +37,8 @@ export function OnboardingSetupCard() {
   };
 
   const handleAnalyze = () => {
-    if (!linkedinUrl.trim() && !resumeName.trim()) {
-      setError("Please provide at least your LinkedIn profile link or upload your resume.");
+    if (!linkedinUrl.trim() || !resumeName.trim()) {
+      setError("Please add both your LinkedIn profile URL and resume before continuing.");
       return;
     }
 
@@ -166,3 +171,4 @@ export function OnboardingSetupCard() {
     </Card>
   );
 }
+

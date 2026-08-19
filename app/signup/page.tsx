@@ -45,7 +45,7 @@ export default function SignupPage() {
     setLoading(true);
     setSession(`${firstName} ${lastName}`, email);
     setTimeout(() => {
-      router.push("/dashboard");
+      router.push("/profile");
     }, 600);
   }
 
@@ -54,7 +54,7 @@ export default function SignupPage() {
     setSocialLoading(provider);
     setSession(`${provider} User`, `user@${provider.toLowerCase()}.com`);
     setTimeout(() => {
-      router.push("/dashboard");
+      router.push("/profile");
     }, 600);
   }
 

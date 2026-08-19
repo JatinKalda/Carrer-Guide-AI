@@ -2,7 +2,6 @@
 
 import { Search, Bell, Moon, Sun } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
-import { user } from "@/lib/data";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useTheme } from "@/components/layout/theme-provider";
 

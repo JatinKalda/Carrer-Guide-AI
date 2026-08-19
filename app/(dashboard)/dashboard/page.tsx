@@ -26,7 +26,7 @@ import {
   ArrowUpRight,
   Lock,
   RotateCcw,
-} from "lucide-react";
+  } from "lucide-react";
 import { motion } from "framer-motion";
 
 const iconMap = { Sparkles, FolderKanban, BadgeCheck, Activity };
@@ -100,10 +100,10 @@ export default function DashboardPage() {
             {/* Score row */}
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               {[
-                { label: "AI Career Score", value: careerScores.aiCareerScore, sub: "Excellent", color: "#5B5FEF" },
-                { label: "Profile Health", value: careerScores.profileHealth, sub: "Good", color: "#10B981" },
-                { label: "Job Match Score", value: careerScores.jobMatch, sub: "Good Match", color: "#7C3AED" },
-                { label: "Activity Score", value: careerScores.activityScore, sub: "Keep going", color: "#F59E0B" },
+                { label: "AI Career Score", value: profile.careerScores.aiCareerScore, sub: "AI score", color: "#5B5FEF" },
+                { label: "Profile Health", value: profile.careerScores.profileHealth, sub: "Health", color: "#10B981" },
+                { label: "Job Match Score", value: profile.careerScores.jobMatch, sub: "Match", color: "#7C3AED" },
+                { label: "Activity Score", value: profile.careerScores.activityScore, sub: "Activity", color: "#F59E0B" },
               ].map((s, i) => (
                 <motion.div key={s.label} custom={i} initial="hidden" animate="show" variants={fadeUp}>
                   <Card className="card-hover p-5">
@@ -182,7 +182,7 @@ export default function DashboardPage() {
                 <CardContent className="p-6">
                   <h3 className="mb-4 font-display font-semibold text-ink">Recent Activity</h3>
                   <div className="space-y-4">
-                    {recentActivity.map((a) => (
+                    {profile.recentActivity.map((a) => (
                       <div key={a.id} className="flex items-center gap-3">
                         <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
                         <p className="flex-1 text-sm text-ink">{a.action}</p>

@@ -47,7 +47,7 @@ export default function LoginPage() {
     setSession(userName, email);
 
     setTimeout(() => {
-      router.push("/dashboard");
+      router.push("/profile");
     }, 600);
   }
 
@@ -57,7 +57,7 @@ export default function LoginPage() {
     setSession(`${provider} User`, `user@${provider.toLowerCase()}.com`);
 
     setTimeout(() => {
-      router.push("/dashboard");
+      router.push("/profile");
     }, 600);
   }
 

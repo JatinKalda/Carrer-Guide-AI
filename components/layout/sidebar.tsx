@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
-import { user } from "@/lib/data";
+import { useProfile } from "@/lib/profile-context";
 import { clearSession } from "@/lib/auth";
 import {
   LayoutGrid,
@@ -43,6 +43,27 @@ export function Sidebar() {
     clearSession();
     router.push("/login");
   }
+  const ProfileFooter = () => {
+    const { profile } = useProfile();
+    const avatarInitials = (profile.name.match(/\b\w/g) || ["U"]).join("").slice(0, 2).toUpperCase();
+
+    return (
+      <div className="mt-4 flex items-center gap-3 rounded-2xl px-2 py-2">
+        <Avatar initials={avatarInitials} size="sm" />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium text-ink">{profile.name}</p>
+          <p className="truncate text-xs text-muted">{profile.role}</p>
+        </div>
+        <button
+          onClick={handleLogout}
+          title="Log out"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-muted transition-colors hover:bg-subtle hover:text-danger"
+        >
+          <LogOut className="h-4 w-4" />
+        </button>
+      </div>
+    );
+  };
 
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-[264px] flex-col border-r border-border/70 bg-card/80 backdrop-blur-xl lg:flex">
@@ -94,20 +115,7 @@ export function Sidebar() {
           </button>
         </div>
 
-        <div className="mt-4 flex items-center gap-3 rounded-2xl px-2 py-2">
-          <Avatar initials={user.avatar} size="sm" />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-ink">{user.name}</p>
-            <p className="truncate text-xs text-muted">{user.plan}</p>
-          </div>
-          <button
-            onClick={handleLogout}
-            title="Log out"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-muted transition-colors hover:bg-subtle hover:text-danger"
-          >
-            <LogOut className="h-4 w-4" />
-          </button>
-        </div>
+           <ProfileFooter />
       </div>
     </aside>
   );
